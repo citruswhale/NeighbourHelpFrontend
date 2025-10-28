@@ -39,11 +39,14 @@ const Dashboard = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* ✅ Sticky Header */}
             <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 py-4 border-b backdrop-blur-md bg-white/60 shadow-sm">
                 <h1 className="text-2xl font-bold">
-                    <span className="text-teal-600">Neighbor</span>
-                    <span className="text-orange-500">Help</span>
+                    <button
+                        onClick={() => navigate("/dashboard")}
+                    >
+                        <span className="text-teal-600">Neighbor</span>
+                        <span className="text-orange-500">Help</span>
+                    </button>
                 </h1>
                 <nav className="flex items-center space-x-6">
                     <button
@@ -61,7 +64,7 @@ const Dashboard = () => {
                     <button
                         onClick={() => {
                             localStorage.removeItem("token");
-                            navigate("/");
+                            navigate("/auth");
                         }}
                         className="text-gray-700 hover:text-red-600 transition-colors"
                     >
@@ -93,9 +96,10 @@ const Dashboard = () => {
                         {services.map((service) => (
                             <div
                                 key={service._id}
+                                onClick={() => navigate(`/service/${service._id}`)} // 👈 add this line
                                 className="border rounded-2xl shadow-sm bg-gradient-to-br from-teal-50 to-orange-50 p-6 text-center transition-transform transform hover:scale-105 hover:shadow-md cursor-pointer"
                             >
-                                <div className="text-6xl font-bold text-gray-700 mb-4">
+                            <div className="text-6xl font-bold text-gray-700 mb-4">
                                     {(service.serviceName?.charAt(0).toUpperCase()) || "?"}
                                 </div>
                                 <h3 className="text-lg font-semibold">

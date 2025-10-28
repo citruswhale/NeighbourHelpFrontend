@@ -86,29 +86,32 @@ const ProfilePage = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* ✅ Sticky Glassy Header */}
             <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 py-4 border-b backdrop-blur-md bg-white/60 shadow-sm">
                 <h1 className="text-2xl font-bold">
-                    <span className="text-teal-600">Neighbor</span>
-                    <span className="text-orange-500">Help</span>
+                    <button
+                        onClick={() => navigate("/dashboard")}
+                    >
+                        <span className="text-teal-600">Neighbor</span>
+                        <span className="text-orange-500">Help</span>
+                    </button>
                 </h1>
                 <nav className="flex items-center space-x-6">
                     <button
                         onClick={() => navigate("/dashboard")}
-                        className="text-gray-700 hover:text-teal-600 transition-colors"
+                        className="text-teal-600 font-medium border-b-2 border-teal-600"
                     >
                         Home
                     </button>
                     <button
                         onClick={() => navigate("/profile")}
-                        className="text-teal-600 font-medium border-b-2 border-teal-600"
+                        className="text-gray-700 hover:text-teal-600 transition-colors"
                     >
                         Profile
                     </button>
                     <button
                         onClick={() => {
                             localStorage.removeItem("token");
-                            navigate("/");
+                            navigate("/auth");
                         }}
                         className="text-gray-700 hover:text-red-600 transition-colors"
                     >
