@@ -17,6 +17,7 @@ const Dashboard = () => {
                         headers: { Authorization: `Bearer ${token}` },
                     }
                 );
+                console.log("Fetched services:", data);
                 setServices(data || []);
             } catch (err) {
                 console.error("Error fetching services:", err);
@@ -38,7 +39,7 @@ const Dashboard = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* ✅ Sticky Header (same as ProfilePage) */}
+            {/* ✅ Sticky Header */}
             <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 py-4 border-b backdrop-blur-md bg-white/60 shadow-sm">
                 <h1 className="text-2xl font-bold">
                     <span className="text-teal-600">Neighbor</span>
@@ -78,8 +79,7 @@ const Dashboard = () => {
                         <span className="text-orange-500">Help</span>
                     </h2>
                     <p className="text-gray-600 mt-2">
-                        Connect with trusted local service providers in your
-                        neighborhood
+                        Connect with trusted local service providers in your neighborhood
                     </p>
                 </div>
 
@@ -96,16 +96,19 @@ const Dashboard = () => {
                                 className="border rounded-2xl shadow-sm bg-gradient-to-br from-teal-50 to-orange-50 p-6 text-center transition-transform transform hover:scale-105 hover:shadow-md cursor-pointer"
                             >
                                 <div className="text-6xl font-bold text-gray-700 mb-4">
-                                    {service.name.charAt(0).toUpperCase()}
+                                    {(service.serviceName?.charAt(0).toUpperCase()) || "?"}
                                 </div>
                                 <h3 className="text-lg font-semibold">
-                                    {service.name}
+                                    {service.serviceName}
                                 </h3>
-                                <p className="text-gray-600">
-                                    {service.providerName}
+                                <p className="text-gray-600 capitalize">
+                                    {service?.provider?.name || "Unknown Provider"}
                                 </p>
                                 <div className="mt-2 flex justify-center items-center text-orange-500 font-medium">
-                                    ⭐ {service.rating?.toFixed(1) || "N/A"}
+                                    ⭐{" "}
+                                    {service.rating && service.rating > 0
+                                        ? service.rating.toFixed(1)
+                                        : "No ratings yet"}
                                 </div>
                             </div>
                         ))}
