@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { FaStar, FaPlus } from "react-icons/fa";
+import AddServiceModal from "../components/AddServiceModal.jsx";
 
 const ProfilePage = () => {
     const [formData, setFormData] = useState({
@@ -11,11 +13,14 @@ const ProfilePage = () => {
         address: "",
         password: "",
     });
+    const [services, setServices] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
 
-    // ✅ Fetch user data
+    // ✅ Fetch user data + services + reviews
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -26,6 +31,7 @@ const ProfilePage = () => {
                         headers: { Authorization: `Bearer ${token}` },
                     }
                 );
+
                 setFormData({
                     id: data._id,
                     name: data.name,
@@ -34,8 +40,18 @@ const ProfilePage = () => {
                     address: data.address || "",
                     password: "",
                 });
+
+                // Fetch services and reviews by this user
+                const [servicesRes, reviewsRes] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/services/user/${data._id}`),
+                    axios.get(`${import.meta.env.VITE_API_BASE_URL}/reviews/user/${data._id}`),
+                ]);
+
+                setServices(servicesRes.data || []);
+                setReviews(reviewsRes.data || []);
             } catch (err) {
-                setMessage("Failed to load profile");
+                console.error(err);
+                setMessage("Failed to load profile data");
             } finally {
                 setLoading(false);
             }
@@ -43,47 +59,15 @@ const ProfilePage = () => {
         fetchUserData();
     }, []);
 
-    // ✅ Validation
-    const validateForm = () => {
-        if (!formData.email || !formData.password) {
-            setMessage("Email and password are required");
-            return false;
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            setMessage("Please enter a valid email address");
-            return false;
-        }
-        if (formData.password.length < 6) {
-            setMessage("Password must be at least 6 characters long");
-            return false;
-        }
-        if (!formData.name || !formData.phone || !formData.address) {
-            setMessage("All fields are required");
-            return false;
-        }
-        return true;
-    };
-
     // ✅ Handle profile update
     const handleUpdate = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
-
         try {
             const token = localStorage.getItem("token");
             await axios.put(
                 `${import.meta.env.VITE_API_BASE_URL}/auth/profile`,
-                {
-                    id: formData.id,
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone,
-                    address: formData.address,
-                    password: formData.password,
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                formData,
+                { headers: { Authorization: `Bearer ${token}` } }
             );
             setMessage("Profile updated successfully!");
             setFormData({ ...formData, password: "" });
@@ -137,24 +121,16 @@ const ProfilePage = () => {
             <main className="pt-24">
                 <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl border">
                     <h2 className="text-3xl font-bold mb-6">My Profile</h2>
-                    <h3 className="text-xl font-semibold mb-4">
-                        Personal Information
-                    </h3>
 
                     <form onSubmit={handleUpdate} className="space-y-5">
                         <div>
-                            <label className="block font-medium mb-1">
-                                Full Name
-                            </label>
+                            <label className="block font-medium mb-1">Full Name</label>
                             <input
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        name: e.target.value,
-                                    })
+                                    setFormData({ ...formData, name: e.target.value })
                                 }
                                 className="w-full border rounded-lg px-3 py-2"
                             />
@@ -167,10 +143,7 @@ const ProfilePage = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        email: e.target.value,
-                                    })
+                                    setFormData({ ...formData, email: e.target.value })
                                 }
                                 className="w-full border rounded-lg px-3 py-2"
                             />
@@ -183,10 +156,7 @@ const ProfilePage = () => {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        phone: e.target.value,
-                                    })
+                                    setFormData({ ...formData, phone: e.target.value })
                                 }
                                 className="w-full border rounded-lg px-3 py-2"
                             />
@@ -198,29 +168,21 @@ const ProfilePage = () => {
                                 name="address"
                                 value={formData.address}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        address: e.target.value,
-                                    })
+                                    setFormData({ ...formData, address: e.target.value })
                                 }
                                 className="w-full border rounded-lg px-3 py-2"
                             />
                         </div>
 
                         <div>
-                            <label className="block font-medium mb-1">
-                                Password
-                            </label>
+                            <label className="block font-medium mb-1">Password</label>
                             <input
                                 type="password"
                                 name="password"
                                 placeholder="Enter new password (optional)"
                                 value={formData.password}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        password: e.target.value,
-                                    })
+                                    setFormData({ ...formData, password: e.target.value })
                                 }
                                 className="w-full border rounded-lg px-3 py-2"
                             />
@@ -246,6 +208,70 @@ const ProfilePage = () => {
                         </button>
                     </form>
                 </div>
+
+                {/* ✅ My Services Section */}
+                <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl border">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-2xl font-semibold">My Services</h3>
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
+                        >
+                            <FaPlus /> Add Service
+                        </button>
+
+                    </div>
+
+                    {services.length === 0 ? (
+                        <p className="text-gray-500">No services added yet.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {services.map((service) => (
+                                <div
+                                    key={service._id}
+                                    className="p-3 border rounded-lg hover:shadow-sm transition"
+                                >
+                                    <p className="font-semibold text-lg">{service.serviceName}</p>
+                                    <p className="text-gray-600">{service.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* ✅ My Reviews Section */}
+                <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-md rounded-2xl border">
+                    <h3 className="text-2xl font-semibold mb-4">
+                        My Reviews ({reviews.length})
+                    </h3>
+
+                    {reviews.length === 0 ? (
+                        <p className="text-gray-500">You haven’t written any reviews yet.</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {reviews.map((review) => (
+                                <div key={review._id} className="border-b pb-3">
+                                    <div className="flex text-orange-500 mb-1">
+                                        {[...Array(review.rating)].map((_, i) => (
+                                            <FaStar key={i} />
+                                        ))}
+                                    </div>
+                                    <p className="font-medium">
+                                        {review.service?.serviceName || "Unknown Service"} by{" "}
+                                        {formData.name}
+                                    </p>
+                                    <p className="text-gray-700">{review.comment}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                {showModal && (
+                    <AddServiceModal
+                        onClose={() => setShowModal(false)}
+                        onServiceAdded={() => window.location.reload()}
+                    />
+                )}
             </main>
         </div>
     );

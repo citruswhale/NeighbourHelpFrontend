@@ -53,6 +53,7 @@ const AuthPage = () => {
             const endpoint = isLogin ? "/auth/login" : "/auth/register";
             const { data } = await axios.post(`${API_BASE}${endpoint}`, formData);
             localStorage.setItem("userInfo", JSON.stringify(data));
+            localStorage.setItem("token", data.token);
             setMessage(isLogin ? "Login successful!" : "Account created!");
             setTimeout(() => navigate("/dashboard"), 1000);
         } catch (err) {
